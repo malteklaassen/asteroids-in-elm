@@ -21,26 +21,33 @@ type alias GLevel =
   , shots        : List Shot
   , cooldown     : Bool
   , accelerating : Bool
+  , score        : Int
+  , lives        : Int
   }
 
 type alias GGameOver =
-  { level : Int
+  { level    : Int
   , cooldown : Bool
+  , score    : Int
   }
 
 type alias GPause = 
-  { level : Int
+  { level    : Int
   , cooldown : Bool
+  , score    : Int
+  , lives    : Int
   }
 
 type alias GEnd = 
-  { cooldown : Bool }
+  { cooldown : Bool
+  , score    : Int
+  }
 
 type alias Input = 
-  { action : Bool
-  , direction : Int
+  { action       : Bool
+  , direction    : Int
   , acceleration : Bool
-  , delta : Time.Time
+  , delta        : Time.Time
   }
 
 type alias Player = 

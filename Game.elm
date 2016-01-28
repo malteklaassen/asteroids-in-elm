@@ -23,23 +23,30 @@ defaultLevel =
   , shots = []
   , cooldown = False
   , accelerating = False
+  , score = 0
+  , lives = 0
   }
 
 defaultGameOver : GGameOver
 defaultGameOver = 
   { level = 0
   , cooldown = False
+  , score = 0
   }
 
 defaultPause : GPause
 defaultPause = 
   { level = 0
   , cooldown = False
+  , score = 0
+  , lives = 0
   }
 
 defaultEnd : GEnd
 defaultEnd =
-  { cooldown = False }
+  { cooldown = False
+  , score = 0
+  }
 
 -- LEVEL DEFINITIONS
 -- These could potentially be move to an own file.
@@ -58,6 +65,8 @@ level0 =
   , shots = []
   , cooldown = True
   , accelerating = False
+  , lives = 0
+  , score = 0
   }
 
 level1 : GLevel
@@ -73,6 +82,8 @@ level1 =
   , shots = []
   , cooldown = True
   , accelerating = False
+  , lives = 0
+  , score = 0
   }
 
 -- List of levels later used by the actual game.

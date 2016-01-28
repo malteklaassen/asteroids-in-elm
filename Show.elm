@@ -23,24 +23,26 @@ view g =
     Level level -> 
       collage gameWidth gameHeight 
         [ background
+        , showShots <| level.shots
         , showPlayer level.accelerating <| level.player
         , showAsteroids <| level.asteroids
-        , showShots <| level.shots
+        , move (-360, 285) << toForm << leftAligned << Text.color white << Text.fromString << String.concat <| ["Lives: ", toString level.lives]
+        , move (-360, 265) << toForm << leftAligned << Text.color white << Text.fromString << String.concat <| ["Score: ", toString level.score]
         ]
     GameOver gameOver -> 
       collage gameWidth gameHeight
         [ background
-        , endText gameOver.level
+        , endText gameOver.level gameOver.score
         ]
     Pause pause ->
       collage gameWidth gameHeight
         [ background
-        , pauseText pause.level
+        , pauseText pause.level pause.score
         ]
     End end ->
       collage gameWidth gameHeight
         [ background
-        , finishedText
+        , finishedText end.score
         ]
     
 polygonPlayer : List (Float, Float)
@@ -194,8 +196,8 @@ titleText =
         "Press W to accelerate, A and D to turn and Space to fire.\nPress Space to start."
     ]
 
-pauseText : Int -> Form
-pauseText l = 
+pauseText : Int -> Int -> Form
+pauseText l s = 
   group
     [ move (0,50) <<
         scale 4 <<
@@ -213,11 +215,14 @@ pauseText l =
         [ "Level "
         , toString l
         , " finished.\nPress Space to continue."
+        , "\nYour score is "
+        , toString s
+        , "!"
         ]
     ]
 
-endText : Int -> Form
-endText l = 
+endText : Int -> Int -> Form
+endText l s = 
   group
     [ move (0,50) <<
         scale 4 <<
@@ -234,13 +239,15 @@ endText l =
         String.concat <|
         [ "You reached level "
         , toString l
+        , " and score "
+        , toString s 
         , ".\nPress Space to restart."
         ]
     ]
 
 
-finishedText : Form
-finishedText = 
+finishedText : Int -> Form
+finishedText s = 
   group
     [ move (0,50) <<
         scale 4 <<
@@ -256,6 +263,9 @@ finishedText =
         Text.fromString <<
         String.concat <|
         [ "You finished all levels."
+        , "\nYour score is "
+        , toString s
+        , "!"
         --, "\nPress Space to restart."
         ]
     ]

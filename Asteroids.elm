@@ -11,6 +11,7 @@ import Types exposing (..)
 import Definitions exposing (..)
 import Helpers
 import Collision
+import CollTypes exposing (..)
 import Show exposing (view)
 
 --UPDATE
@@ -19,55 +20,63 @@ update input game =
   case game of
     Start ->
       if input.action then
-        Level (Helpers.index levelList 0 defaultLevel)
+        let 
+          level = Helpers.index levelList 0 defaultLevel
+        in 
+          Level { level | lives = 5 }
       else
         game
     Level level ->
-      if Collision.collisionPlayer level.player level.asteroids then
-        GameOver { defaultGameOver | cooldown = True , level = level.level }
-      else if List.isEmpty level.asteroids then
-        if level.level >= List.length levelList - 1 then 
-          End { defaultEnd | cooldown = True }
-        else
-          Pause { defaultPause | cooldown = True , level = level.level }
-      else 
-        let
-          newShots =
-            if input.action && (not level.cooldown) then
-              [ { x = level.player.x + sin level.player.angle * playerRadius
-                , y = level.player.y + cos level.player.angle * playerRadius
-                , speed = shotSpeed
-                , angle = level.player.angle
-                , ttl = shotTTL
-                }
-              ]
-            else
-              []
-        in
-          Level 
-            { level 
-              | accelerating = input.acceleration
-              , cooldown = input.action
-              , shots = updateShots level.shots level.asteroids input.delta ++ newShots
-              , asteroids = updateAsteroids level.asteroids level.shots input.delta
-              , player = updatePlayer level.player input.direction input.acceleration input.delta
-            }
+      let
+        collision = Collision.collisionPlayer level.player level.asteroids
+      in 
+        if collision && (level.lives == 0) then
+          GameOver { defaultGameOver | cooldown = True , level = level.level , score = level.score }
+        else if List.isEmpty level.asteroids then
+          if level.level >= List.length levelList - 1 then 
+            End { defaultEnd | cooldown = True , score = level.score + level.lives * 50}
+          else
+            Pause { defaultPause | cooldown = True , level = level.level , score = level.score , lives = level.lives }
+        else 
+          let
+            newShots =
+              if input.action && (not level.cooldown) then
+                [ { x = level.player.x + sin level.player.angle * playerRadius
+                  , y = level.player.y + cos level.player.angle * playerRadius
+                  , speed = shotSpeed
+                  , angle = level.player.angle
+                  , ttl = shotTTL
+                  }
+                ]
+              else
+                []
+          in
+            Level 
+              { level 
+                | accelerating = input.acceleration
+                , cooldown = input.action
+                , shots = updateShots level.shots level.asteroids input.delta ++ newShots
+                , asteroids = updateAsteroids level.asteroids level.player level.shots input.delta
+                , player = updatePlayer level.player input.direction input.acceleration input.delta
+                , lives = if collision then level.lives - 1 else level.lives
+                , score = level.score + (List.sum << List.map (\a -> a.size + 1) <| Collision.collisionAsteroids level.asteroids level.shots )
+              }
     Pause pause ->
       if pause.level >= List.length levelList - 1 then
-        End { defaultEnd | cooldown = True }
+        End { defaultEnd | cooldown = True , score = pause.score}
       else
         if (not pause.cooldown) && input.action then
           let
             next = Helpers.index levelList (pause.level + 1) defaultLevel
           in
-            Level { next | level = (pause.level + 1) }
+            Level { next | level = (pause.level + 1) , score = pause.score, lives = pause.lives}
         else
           Pause { pause | cooldown = input.action }
     GameOver gameOver ->
       if (not gameOver.cooldown) && input.action then
         Start
       else
-        GameOver { gameOver | cooldown = input.action }
+        GameOver { gameOver | cooldown = input.action , score = gameOver.score}
     End end ->
       game
 
@@ -85,14 +94,14 @@ updatePlayer p direction acceleration delta =
     , angle = Helpers.sanangle <| p.angle + toFloat direction * playerDirectional * delta
     }
 
-updateAsteroids : List Asteroid -> List Shot -> Time -> List Asteroid
-updateAsteroids la ls delta =
+updateAsteroids : List Asteroid -> Player -> List Shot -> Time -> List Asteroid
+updateAsteroids la p ls delta =
   (++)
     ( -- Old, moved Asteroids
       List.map (\a ->
         { a | x = Helpers.sanx <| a.x + (sin a.angle) * a.speed * delta , y = Helpers.sany <| a.y + (cos a.angle) * a.speed * delta }
       ) <<
-      List.filter (\a -> (not <| Collision.collisionAsteroid a ls)) <|
+      List.filter (\a -> (not <| Collision.collisionAsteroid a ls) && (not <| Collision.cornerCollision (Collision.toCircle (P p)) (Collision.toCircle (A a)))) <|
       la
     )
     ( -- New Asteroids created through collisions
@@ -114,7 +123,7 @@ updateAsteroids la ls delta =
             }
           ]
         ) <<
-      List.filter (\a -> Collision.collisionAsteroid a ls && a.size > 0) <|
+      List.filter (\a -> (Collision.collisionAsteroid a ls || Collision.cornerCollision (Collision.toCircle (P p)) (Collision.toCircle (A a)))&& a.size > 0) <|
       la
     )
   

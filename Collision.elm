@@ -82,7 +82,7 @@ collisionPlayer p =
 
 collisionAsteroids : List Asteroid -> List Shot -> List Asteroid
 collisionAsteroids la ls =
-  List.filter (\a -> not <| collisionAsteroid a ls) <| la
+  List.filter (\a -> collisionAsteroid a ls) <| la
 
 collisionAsteroid : Asteroid -> List Shot -> Bool
 collisionAsteroid a =
