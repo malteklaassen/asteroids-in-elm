@@ -6,7 +6,8 @@ import Keyboard
 import Text
 
 --CUSTOM IMPORTS
-import Game exposing (levelList, defaultLevel, defaultGameOver, defaultPause, defaultEnd)
+import Game exposing (defaultLevel, defaultGameOver, defaultPause, defaultEnd)
+import Levels exposing (levelList)
 import Types exposing (..)
 import Definitions exposing (..)
 import Helpers
