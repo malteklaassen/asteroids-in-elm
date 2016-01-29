@@ -15,5 +15,5 @@ playerAcceleration = 60.0
 playerDirectional = 3.0
 playerMaxSpeed = 200.0
 shotSpeed = 300.0
+
 shotTTL = 2.0
-shotCooldown = 0.1

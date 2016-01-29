@@ -4,9 +4,9 @@ import Definitions exposing (..)
 
 index : List a -> Int -> a -> a
 index la i a =
-  case la of
-    head::tail -> if i == 0 then head else index tail (i-1) a
-    [] -> a
+  case List.head << List.drop i <| la of
+    Nothing -> a
+    Just x -> x
 
 sanx : Float -> Float
 sanx x = 
