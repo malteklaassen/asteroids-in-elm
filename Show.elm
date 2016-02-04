@@ -76,6 +76,8 @@ polygonAsteroid =
     , [ ( 0, 10 ), ( 2, 6 ), ( 6, 8 ), ( 8, 4 ), ( 6, 2 ), ( 10, 0 ), ( 6, -8 ), ( 2, -10 ), ( -2, -8 ), ( -6, -8 ), ( -10, -2 ), ( -10, 0 ), ( -8, 9 ) ]
     ]
 
+polygonAsteroid_length = List.length polygonAsteroid
+
 
 
 {- cornerShow : Form -> Form
@@ -143,20 +145,17 @@ cornerShow ( x, y ) r f =
 
 showPlayer : Bool -> Player -> Form
 showPlayer accelerating p =
-    cornerShow ( p.x, p.y ) playerRadius
-        << rotate (0 - p.angle)
-        << group
-        << List.map
-            (\f ->
-                f
-                    <| polygon
-                        (List.map identity
-                            <| if accelerating then
-                                polygonPlayerAcc
-                               else
-                                polygonPlayer
-                        )
-            )
+    let
+        player' = if accelerating then polygonPlayerAcc else polygonPlayer
+        player = polygon player'
+    in
+        cornerShow ( p.x, p.y ) playerRadius
+            << rotate (0 - p.angle)
+            << group
+            << List.map
+                (\f ->
+                    f player
+                )
         <| [ filled black
              -- to hide items BEHIND this one
            , outlined (solid white)
@@ -174,17 +173,16 @@ showAsteroids =
 
 
 showAsteroid : Asteroid -> Form
-showAsteroid =
-    \a ->
+showAsteroid a =
+    let
+        asteroid = polygon << List.map (\(x,y) -> ( (toFloat a.size + 1) * x, (toFloat a.size + 1) * y)) <| index polygonAsteroid (a.form % polygonAsteroid_length) []
+    in
         cornerShow ( a.x, a.y ) (toFloat a.size + 1 * asteroidRadius)
             << rotate a.angle
             << group
             << List.map
                 (\f ->
-                    f
-                        << polygon
-                        << List.map (\( x, y ) -> ( (toFloat a.size + 1) * x, (toFloat a.size + 1) * y ))
-                        <| index polygonAsteroid (a.form % (List.length polygonAsteroid)) []
+                    f asteroid
                 )
             <| [ filled black
                  -- to hide items BEHIND this one
@@ -198,13 +196,14 @@ showAsteroid =
 
 showShots : List Shot -> Form
 showShots =
-    group
-        << List.map
-            (\s ->
-                cornerShow ( s.x, s.y ) shotRadius
-                    << outlined (solid white)
-                    <| circle shotRadius
-            )
+    let 
+        shot = outlined (solid white) <| circle shotRadius
+    in
+        group
+            << List.map
+                (\s ->
+                    cornerShow ( s.x, s.y ) shotRadius shot
+                )
 
 
 

@@ -96,7 +96,10 @@ These are the functions that later will be used by the game outside of this file
 
 collisionPlayer : Player -> List Asteroid -> Bool
 collisionPlayer p =
-    List.any identity << List.map ((cornerCollision (toCircle (P p))) << toCircle << A)
+    let
+        p' = toCircle << P <| p
+    in
+        List.any identity << List.map ((cornerCollision p') << toCircle << A)
 
 
 collisionAsteroids : List Asteroid -> List Shot -> List Asteroid
@@ -106,9 +109,15 @@ collisionAsteroids la ls =
 
 collisionAsteroid : Asteroid -> List Shot -> Bool
 collisionAsteroid a =
-    List.any identity << List.map ((cornerCollision (toCircle (A a))) << toCircle << S)
+    let
+        a' = toCircle << A <| a
+    in
+        List.any identity << List.map ((cornerCollision a') << toCircle << S)
 
 
 collisionShot : Shot -> List Asteroid -> Bool
 collisionShot s =
-    List.any identity << List.map ((cornerCollision (toCircle (S s))) << toCircle << A)
+    let
+        s' = toCircle << S <| s
+    in
+        List.any identity << List.map ((cornerCollision s') << toCircle << A)

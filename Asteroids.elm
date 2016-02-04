@@ -111,7 +111,10 @@ updateLevel input level =
                             else
                                 level.lives
                         , score =
-                            level.score + (List.sum << List.map (\a -> (a.size + 1) * 10) <| Collision.collisionAsteroids level.asteroids level.shots) - (List.length newShots)
+                            let 
+                                c = Collision.collisionAsteroids level.asteroids level.shots
+                            in
+                                level.score + (List.sum << List.map (\a -> (a.size + 1) * 10) <| c) - (List.length newShots)
                             -- an asteroid destroyed by shots gives points according to its size, a shot fired costs points
                     }
 
@@ -208,8 +211,7 @@ updateShots ls la delta =
                 , ttl = s.ttl - delta
             }
         )
-        << List.filter (\s -> (not <| Collision.collisionShot s la))
-        << List.filter (\s -> s.ttl >= 0)
+        << List.filter (\s -> (not <| Collision.collisionShot s la) && s.ttl >= 0)
         <| ls
 
 
